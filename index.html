@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>TRACKING</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2904/2904975.png">
+
+<style>
+  body { 
+    margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #000; color: #fff; direction: rtl; overflow-x: hidden;
+    user-select: none; -webkit-user-select: none;
+    /* تحسين اللمس على الموبايل */
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* شاشة الدخول */
+  #lockScreen {
+    position: fixed; inset: 0; background: #000; z-index: 2000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;
+  }
+  .login-box {
+    display: flex; flex-direction: column; gap: 12px; width: 250px;
+  }
+  #lockScreen input {
+    padding: 15px; border-radius: 12px; border: 1px solid #333;
+    background: #111; color: #fff; text-align: center; font-size: 16px; outline: none;
+    transition: border 0.3s;
+  }
+  #lockScreen input:focus { border-color: #4caf50; }
+  #lockScreen button {
+    padding: 12px; border-radius: 10px; border: none;
+    background: #4caf50; color: #000; font-weight: bold; cursor: pointer; font-size: 16px;
+    transition: background 0.3s, transform 0.1s;
+  }
+  #lockScreen button:active { transform: scale(0.98); background: #3e8e41; }
+
+  /* التنسيق الرئيسي للتقويم */
+  .header { text-align: center; padding: 20px; font-size: 24px; font-weight: bold; color: #4caf50; }
+  .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 10px; max-width: 450px; margin: 0 auto; }
+  
+  .day { 
+    width: 45px; height: 45px; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; font-size: 16px; font-weight: bold; 
+    transition: all 0.3s ease; border: 1px solid #222; position: relative; 
+  }
+  .day:active { transform: scale(1.1); } /* تأثير بسيط عند الضغط على اليوم */
+
+  /* أنيميشن النبض للعادة */
+  @keyframes pulseRed {
+    0% { box-shadow: 0 0 5px rgba(229, 57, 53, 0.6); }
+    50% { box-shadow: 0 0 15px rgba(229, 57, 53, 0.9); }
+    100% { box-shadow: 0 0 5px rgba(229, 57, 53, 0.6); }
+  }
+
+  .habit-glow { animation: pulseRed 2s infinite ease-in-out; border: 1px solid rgba(229, 57, 53, 0.8); }
+  .day.today { outline: 2px solid #fff; outline-offset: 3px; }
+
+  /* الإحصائيات */
+  .stats-container { max-width: 90%; margin: 20px auto; padding: 15px; background: #111; border-radius: 15px; border: 1px solid #222; }
+  .stat-row { margin-bottom: 15px; }
+  .stat-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px; font-weight: bold; }
+  .progress-bg { background: #222; height: 10px; border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; transition: width 0.6s ease; }
+  .fill-prayer { background: linear-gradient(90deg, #2e7d32, #4caf50); }
+  .fill-habit { background: linear-gradient(90deg, #c62828, #e53935); }
+
+  /* Popup مع أنيميشن الظهور */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .popup { 
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
+    display: none; align-items: center; justify-content: center; 
+    z-index: 1000; backdrop-filter: blur(8px); 
+  }
+  .popup-content { 
+    background: #1a1a1a; padding: 20px; border-radius: 20px; 
+    width: 85%; max-width: 300px; text-align: center; 
+    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; 
+    border: 1px solid #333;
+    /* تطبيق أنيميشن الظهور */
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  /* أنيميشن النبض عند الضغط على الصلوات */
+  @keyframes circlePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.85); }
+    100% { transform: scale(1); }
+  }
+
+  .popup-circle { 
+    width: 55px; height: 55px; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; font-size: 13px; background: #2a2a2a; color: #fff;
+    transition: background 0.2s, transform 0.1s;
+  }
+  /* تأثير النبض عند النقر */
+  .popup-circle:active { 
+    animation: circlePulse 0.2s ease-out;
+  }
+  
+  .popup-circle.active-prayer { background: #4caf50; color: #000; font-weight: bold; }
+  .popup-circle.active-habit { background: #e53935; color: #fff; font-weight: bold; }
+  
+  .btn-close { 
+    background: #444; color: #fff; width: 100%; padding: 12px; 
+    border: none; border-radius: 12px; margin-top: 10px; 
+    cursor: pointer; font-weight: bold;
+    transition: background 0.2s;
+  }
+  .btn-close:active { background: #555; transform: scale(0.98); }
+</style>
+</head>
+<body>
+
+<div id="lockScreen">
+  <div style="font-size:22px; color:#4caf50; font-weight:bold; margin-bottom:10px;">نظام المتابعة الخاص</div>
+  <div class="login-box">
+    <input type="text" id="userInput" placeholder="اسم المستخدم" autocomplete="off" inputmode="text">
+    <input type="password" id="passInput" placeholder="كلمة السر" inputmode="numeric">
+    <button onclick="checkLogin()">فتح النظام</button>
+  </div>
+  <div id="loginError" style="color:#e53935; font-size:14px; display:none; margin-top:10px;">⚠️ الاسم أو كلمة السر خطأ</div>
+</div>
+
+<div id="mainContent" style="display:none;">
+  <div class="header" id="monthTitle"></div>
+  <div class="calendar" id="calendar"></div>
+
+  <div class="stats-container">
+    <div class="stat-row">
+      <div class="stat-label"><span>إنجاز الصلوات (حتى الآن)</span><span id="prayerPercent">0%</span></div>
+      <div class="progress-bg"><div id="prayerBar" class="progress-fill fill-prayer" style="width: 0%"></div></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-label"><span>الالتزام (العادة)</span><span id="habitPercent">0%</span></div>
+      <div class="progress-bg"><div id="habitBar" class="progress-fill fill-habit" style="width: 0%"></div></div>
+    </div>
+  </div>
+
+  <div class="popup" id="popup">
+    <div class="popup-content" id="popupContent">
+      <div id="popupDate" style="width:100%; margin-bottom:10px; font-size:16px; color:#4caf50; font-weight:bold;"></div>
+      <button class="btn-close" onclick="closePopup()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- إعدادات الدخول ---
+const CORRECT_USER = "mohamed";    // الاسم الافتراضي
+const CORRECT_PASS = "****";     // الباسوورد الافتراضي
+
+// دعم زر Enter للدخول
+document.addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') {
+    if (document.getElementById("lockScreen").style.display !== "none") {
+      checkLogin();
+    }
+  }
+});
+
+function checkLogin() {
+  const user = document.getElementById("userInput").value;
+  const pass = document.getElementById("passInput").value;
+  
+  if (user === CORRECT_USER && pass === CORRECT_PASS) {
+    document.getElementById("lockScreen").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+    loadCalendar();
+  } else {
+    document.getElementById("loginError").style.display = "block";
+    document.getElementById("passInput").value = ""; // مسح الباسوورد للمحاولة مرة أخرى
+  }
+}
+
+// --- باقي منطق التطبيق ---
+const now = new Date();
+const year = now.getFullYear();
+const month = now.getMonth();
+const todayDate = now.getDate();
+const currentHour = now.getHours();
+
+const prayerSchedule = [
+  { key: "fajr", hour: 4, name: "فجر" },
+  { key: "zuhr", hour: 12, name: "ظهر" },
+  { key: "asr", hour: 15, name: "عصر" },
+  { key: "maghrib", hour: 18, name: "مغرب" },
+  { key: "isha", hour: 19, name: "عشاء" }
+];
+
+function getData(dateStr) {
+  const saved = localStorage.getItem(dateStr);
+  return saved ? JSON.parse(saved) : { prayer: {fajr:false, zuhr:false, asr:false, maghrib:false, isha:false}, habit: false };
+}
+
+function updateStats() {
+  let totalDue = 0, doneP = 0, doneH = 0;
+  for (let d = 1; d <= todayDate; d++) {
+    const data = getData(`d-${year}-${month+1}-${d}`);
+    prayerSchedule.forEach(p => {
+      if (d < todayDate || (d === todayDate && currentHour >= p.hour)) {
+        totalDue++; if (data.prayer[p.key]) doneP++;
+      }
+    });
+    if (data.habit) doneH++;
+  }
+  const pR = totalDue > 0 ? Math.round((doneP/totalDue)*100) : 0;
+  const hR = Math.round((doneH/todayDate)*100);
+  document.getElementById("prayerBar").style.width = pR+"%";
+  document.getElementById("prayerPercent").innerText = pR+"%";
+  document.getElementById("habitBar").style.width = hR+"%";
+  document.getElementById("habitPercent").innerText = hR+"%";
+}
+
+function loadCalendar() {
+  const cal = document.getElementById("calendar");
+  const days = new Date(year, month + 1, 0).getDate();
+  document.getElementById("monthTitle").innerText = now.toLocaleString("ar", { month: "long", year: "numeric" });
+  cal.innerHTML = "";
+  for (let d = 1; d <= days; d++) {
+    const dStr = `d-${year}-${month+1}-${d}`, data = getData(dStr), div = document.createElement("div");
+    div.className = "day"; div.innerText = d;
+    if (d === todayDate) div.classList.add("today");
+    let cols = [];
+    // تقسيم الدائرة لـ 5 أجزاء متساوية (72 درجة لكل صلاة)
+    prayerSchedule.forEach((p, i) => cols.push(`${data.prayer[p.key] ? "#4caf50" : "#222"} ${i*72}deg ${(i+1)*72}deg`));
+    div.style.background = `conic-gradient(${cols.join(',')})`;
+    if (data.habit) { div.style.color = "#e53935"; div.classList.add("habit-glow"); }
+    div.onclick = () => openPopup(dStr, d);
+    cal.appendChild(div);
+  }
+  updateStats();
+}
+
+function openPopup(dateStr, dNum) {
+  const data = getData(dateStr);
+  document.getElementById("popupDate").innerText = `يوم ${dNum} ${now.toLocaleString("ar", {month: "long"})}`;
+  // إزالة الدوائر القديمة
+  document.querySelectorAll('.popup-circle').forEach(c => c.remove());
+  
+  // إضافة دوائر الصلوات
+  prayerSchedule.forEach(p => {
+    const b = document.createElement("div");
+    b.className = "popup-circle" + (data.prayer[p.key] ? " active-prayer" : "");
+    b.innerText = p.name;
+    b.onclick = () => { data.prayer[p.key] = !data.prayer[p.key]; update(dateStr, data, dNum); };
+    document.getElementById("popupContent").insertBefore(b, document.querySelector('.btn-close'));
+  });
+  
+  // إضافة دائرة العادة
+  const hB = document.createElement("div");
+  hB.className = "popup-circle" + (data.habit ? " active-habit" : "");
+  hB.innerText = "عادة";
+  hB.onclick = () => { data.habit = !data.habit; update(dateStr, data, dNum); };
+  document.getElementById("popupContent").insertBefore(hB, document.querySelector('.btn-close'));
+  
+  document.getElementById("popup").style.display = "flex";
+}
+
+// دالة التحديث وإعادة الرسم
+function update(s, d, n) { 
+  localStorage.setItem(s, JSON.stringify(d)); 
+  loadCalendar(); 
+  // ملاحظة: الـ Popup سيعاد رسمه بأنيميشن الـ fadeIn، 
+  // لو الأنيميشن مزعج عند التحديث المتكرر، يمكن فصل دالة الرسم عن دالة الفتح.
+  openPopup(s, n); 
+}
+
+function closePopup() { 
+  document.getElementById("popup").style.display = "none"; 
+}
+</script>
+</body>
+</html>
