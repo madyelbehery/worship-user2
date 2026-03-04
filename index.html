@@ -2,110 +2,76 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>TRACKING</title>
-<link rel="manifest" href="manifest.json">
+<title>TRACKING - SMART QURAN</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#000000">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2904/2904975.png">
-
 <style>
-  body { 
-    margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    background: #000; color: #fff; direction: rtl; overflow-x: hidden;
-    user-select: none; -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
+  body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #000; color: #fff; direction: rtl; user-select: none; -webkit-tap-highlight-color: transparent; }
   
   /* شاشة الدخول */
-  #lockScreen {
-    position: fixed; inset: 0; background: #000; z-index: 2000;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;
-  }
+  #lockScreen { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
   .login-box { display: flex; flex-direction: column; gap: 12px; width: 250px; }
-  #lockScreen input {
-    padding: 15px; border-radius: 12px; border: 1px solid #333;
-    background: #111; color: #fff; text-align: center; font-size: 16px; outline: none;
-  }
-  #lockScreen button {
-    padding: 12px; border-radius: 10px; border: none;
-    background: #4caf50; color: #000; font-weight: bold; cursor: pointer; font-size: 16px;
-  }
-
-  /* التنسيق الرئيسي للتقويم */
+  #lockScreen input { padding: 15px; border-radius: 12px; border: 1px solid #333; background: #111; color: #fff; text-align: center; outline: none; }
+  #lockScreen button { padding: 12px; border-radius: 10px; border: none; background: #4caf50; font-weight: bold; cursor: pointer; }
+  
   .header { text-align: center; padding: 20px; font-size: 24px; font-weight: bold; color: #4caf50; }
   .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 10px; max-width: 450px; margin: 0 auto; }
   
   .day { 
-    width: 45px; height: 45px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center; 
-    cursor: pointer; font-size: 16px; font-weight: bold; 
-    transition: all 0.3s ease; border: 2px solid #222; position: relative; 
+    width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; border: 2px solid #222; color: #fff; 
   }
 
-  /* الإطار الأزرق للقرآن */
-  .quran-border { border-color: #2196f3 !important; box-shadow: 0 0 10px #2196f3; }
-  /* لون الرقم أحمر للعادة */
-  .habit-active-text { color: #ff5252 !important; text-shadow: 0 0 5px rgba(255, 82, 82, 0.5); }
+  .quran-border { border-color: #0000FF !important; box-shadow: 0 0 12px #0000FF; border-width: 3px !important; }
+  
+  .h-level-1 { color: #ff5252 !important; text-shadow: 0 0 8px #ff5252; }
+  .h-level-2 { color: #ff1744 !important; text-shadow: 0 0 12px #ff1744; }
+  .h-level-3 { color: #d50000 !important; text-shadow: 0 0 15px #d50000; }
+  .h-level-4 { color: #8e0000 !important; text-shadow: 0 0 20px #ff0000, 0 0 5px #ffffff; }
 
   .day.today { outline: 2px solid #fff; outline-offset: 3px; }
-
-  /* الإحصائيات */
-  .stats-container { max-width: 90%; margin: 20px auto; padding: 15px; background: #111; border-radius: 15px; border: 1px solid #222; }
-  .stat-row { margin-bottom: 15px; }
+  
+  .stats-container { max-width: 90%; margin: 10px auto; padding: 15px; background: #111; border-radius: 15px; border: 1px solid #222; }
   .stat-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px; font-weight: bold; }
-  .progress-bg { background: #222; height: 10px; border-radius: 10px; overflow: hidden; }
+  .progress-bg { background: #222; height: 10px; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
   .progress-fill { height: 100%; transition: width 0.6s ease; }
-  .fill-prayer { background: linear-gradient(90deg, #2e7d32, #4caf50); }
-  .fill-habit { background: linear-gradient(90deg, #c62828, #e53935); }
+  
+  .popup { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
+  .popup-content { background: #1a1a1a; padding: 20px; border-radius: 20px; width: 85%; max-width: 340px; text-align: center; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; border: 1px solid #333; }
+  
+  .popup-circle { width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; background: #2a2a2a; transition: 0.2s; }
+  .active-prayer { background: #4caf50; color: #000; font-weight: bold; }
 
-  /* Popup */
-  .popup { 
-    position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
-    display: none; align-items: center; justify-content: center; 
-    z-index: 1000; backdrop-filter: blur(8px); 
-  }
-  .popup-content { 
-    background: #1a1a1a; padding: 20px; border-radius: 20px; 
-    width: 85%; max-width: 300px; text-align: center; 
-    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; 
-    border: 1px solid #333; animation: fadeIn 0.4s ease-out;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+  .habit-btn { transition: background 0.3s; color: white; border: 1px solid #444; }
+  .habit-1 { background: #b71c1c; border-color: #ff5252; }
+  .habit-2 { background: #d32f2f; border-color: #ff1744; }
+  .habit-3 { background: #f44336; border-color: #ffffff; }
+  .habit-4 { background: #ff1744; border-color: #ffffff; box-shadow: 0 0 15px #ff0000; font-weight: 900; }
 
-  .popup-circle { 
-    width: 55px; height: 55px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center; 
-    cursor: pointer; font-size: 13px; background: #2a2a2a; color: #fff;
-    transition: background 0.2s;
+  .quran-section { width: 100%; background: #222; padding: 10px; border-radius: 12px; margin-top: 5px; border: 1px solid #0000FF; }
+  .quran-section h4 { margin: 0 0 10px 0; font-size: 14px; color: #0000FF; }
+  .quran-inputs { display: flex; gap: 5px; justify-content: center; align-items: center; }
+  
+  select, input[type="number"] { 
+    background: #000; border: 1px solid #333; color: #fff; 
+    border-radius: 5px; font-size: 12px; padding: 8px; outline: none;
   }
-  .popup-circle.active-prayer { background: #4caf50; color: #000; font-weight: bold; }
-  .popup-circle.active-habit { background: #e53935; color: #fff; font-weight: bold; }
+  #quranSurah { width: 40%; }
+  .quran-num { width: 25%; }
 
-  /* قسم القرآن الجديد */
-  .quran-section { width: 100%; background: #222; padding: 12px; border-radius: 15px; margin-top: 5px; border: 1px solid #2196f3; }
-  .quran-section h4 { margin: 0 0 10px 0; font-size: 14px; color: #2196f3; }
-  .quran-inputs { display: flex; gap: 5px; justify-content: center; }
-  .quran-inputs input { width: 30%; padding: 10px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; text-align: center; font-size: 12px; }
-
-  .btn-save { 
-    background: #4caf50; color: #000; width: 100%; padding: 14px; 
-    border: none; border-radius: 12px; margin-top: 10px; 
-    cursor: pointer; font-weight: bold; font-size: 16px;
-  }
+  .btn-save { background: #4caf50; color: #000; width: 100%; padding: 12px; border: none; border-radius: 12px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+  .data-management { text-align: center; margin-top: 20px; padding-bottom: 30px; }
+  .btn-data { background: #222; color: #888; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; font-size: 11px; cursor: pointer; margin: 5px; }
 </style>
 </head>
 <body>
 
 <div id="lockScreen">
-  <div style="font-size:22px; color:#4caf50; font-weight:bold; margin-bottom:10px;">نظام المتابعة الخاص</div>
+  <div style="font-size:22px; color:#4caf50; font-weight:bold;">نظام المتابعة الخاص</div>
   <div class="login-box">
-    <input type="text" id="userInput" placeholder="اسم المستخدم" autocomplete="off">
-    <input type="password" id="passInput" placeholder="كلمة السر">
+    <input type="text" id="userInput" placeholder="اسم المستخدم">
+    <input type="tel" id="passInput" placeholder="كلمة السر" style="-webkit-text-security: disc;">
     <button onclick="checkLogin()">فتح النظام</button>
   </div>
-  <div id="loginError" style="color:#e53935; font-size:14px; display:none; margin-top:10px;">⚠️ الخطأ في البيانات</div>
 </div>
 
 <div id="mainContent" style="display:none;">
@@ -113,64 +79,100 @@
   <div class="calendar" id="calendar"></div>
 
   <div class="stats-container">
-    <div class="stat-row">
-      <div class="stat-label"><span>إنجاز الصلوات</span><span id="prayerPercent">0%</span></div>
-      <div class="progress-bg"><div id="prayerBar" class="progress-fill fill-prayer" style="width: 0%"></div></div>
-    </div>
-    <div class="stat-row">
-      <div class="stat-label"><span>الالتزام بالعادات</span><span id="habitPercent">0%</span></div>
-      <div class="progress-bg"><div id="habitBar" class="progress-fill fill-habit" style="width: 0%"></div></div>
-    </div>
+    <div class="stat-label"><span>الصلوات</span><span id="prayerPercent">0%</span></div>
+    <div class="progress-bg"><div id="prayerBar" class="progress-fill" style="background:#4caf50; width:0%"></div></div>
+    <div class="stat-label"><span>الالتزام بالعادات (عدم الفعل)</span><span id="habitPercent">0%</span></div>
+    <div class="progress-bg"><div id="habitBar" class="progress-fill" style="background:#e53935; width:0%"></div></div>
+  </div>
+
+  <div class="data-management">
+    <button class="btn-data" onclick="exportData()">📤 نسخة احتياطية</button>
+    <button class="btn-data" onclick="importData()">📥 استرجاع البيانات</button>
   </div>
 
   <div class="popup" id="popup">
-    <div class="popup-content" id="popupContent">
-      <div id="popupDate" style="width:100%; margin-bottom:5px; font-size:16px; color:#4caf50; font-weight:bold;"></div>
-      
-      <div id="circlesArea" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; width:100%;"></div>
-
+    <div class="popup-content">
+      <div id="popupDate" style="width:100%; color:#4caf50; font-weight:bold;"></div>
+      <div id="circlesArea" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;"></div>
       <div class="quran-section">
         <h4>📖 ورد القرآن الكريم</h4>
         <div class="quran-inputs">
-          <input type="text" id="quranSurah" placeholder="السورة">
-          <input type="number" id="quranFrom" placeholder="من">
-          <input type="number" id="quranTo" placeholder="إلى">
+            <select id="quranSurah" onchange="updateAyahLimits()">
+                <option value="">اختر السورة</option>
+            </select>
+            <select id="quranFrom" class="quran-num" onchange="autoSetTo()"></select>
+            <select id="quranTo" class="quran-num"></select>
         </div>
       </div>
-
       <button class="btn-save" onclick="saveAndClose()">حفظ وإغلاق</button>
     </div>
   </div>
 </div>
 
 <script>
-const CORRECT_USER = "To", CORRECT_PASS = "123";
+const CORRECT_USER = "To", CORRECT_PASS = "123"; 
 let currentOpenDate = "";
 
+// بيانات السور وعدد آياتها
+const surahData = [
+  ["الفاتحة",7],["البقرة",286],["آل عمران",200],["النساء",176],["المائدة",120],["الأنعام",165],["الأعراف",206],["الأنفال",75],["التوبة",129],["يونس",109],["هود",123],["يوسف",111],["الرعد",43],["إبراهيم",52],["الحجر",99],["النحل",128],["الإسراء",111],["الكهف",110],["مريم",98],["طه",135],["الأنبياء",112],["الحج",78],["المؤمنون",118],["النور",64],["الفرقان",77],["الشعراء",227],["النمل",93],["القصص",88],["العنكبوت",69],["الروم",60],["لقمان",34],["السجدة",30],["الأحزاب",73],["سبأ",54],["فاطر",45],["يس",83],["الصافات",182],["ص",88],["الزمر",75],["غافر",85],["فصلت",54],["الشورى",53],["الزخرف",89],["الدخان",59],["الجاثية",37],["الأحقاف",35],["محمد",38],["الفتح",29],["الحجرات",18],["ق",45],["الذاريات",60],["الطور",49],["النجم",62],["القمر",55],["الرحمن",78],["الواقعة",96],["الحديد",29],["المجادلة",22],["الحشر",24],["الممتحنة",13],["الصف",14],["الجمعة",11],["المنافقون",11],["التغابن",18],["الطلاق",12],["التحريم",12],["الملك",30],["القلم",52],["الحاقة",52],["المعارج",44],["نوح",28],["الجن",28],["المزمل",20],["المدثر",56],["القيامة",40],["الإنسان",31],["المرسلات",50],["النبأ",40],["النازعات",46],["عبس",42],["التكوير",29],["الانفطار",19],["المطففين",36],["الانشقاق",25],["البروج",22],["الطارق",17],["الأعلى",19],["الغاشية",26],["الفجر",30],["البلد",20],["الشمس",15],["الليل",21],["الضحى",11],["الشرح",8],["التين",8],["العلق",19],["القدر",5],["البينة",8],["الزلزلة",8],["العاديات",11],["القارعة",11],["التكاثر",8],["العصر",3],["الهمزة",9],["الفيل",5],["قريش",4],["الماعون",7],["الكوثر",3],["الكافرون",6],["النصر",3],["المسد",5],["الإخلاص",4],["الفلق",5],["الناس",6]
+];
+
+// تعبئة قائمة السور
+const selectSurah = document.getElementById("quranSurah");
+surahData.forEach(s => {
+    let opt = document.createElement("option");
+    opt.value = s[0]; opt.innerText = s[0];
+    selectSurah.appendChild(opt);
+});
+
+// تحديث قوائم الآيات بناءً على السورة
+function updateAyahLimits() {
+    const sName = document.getElementById("quranSurah").value;
+    const fromSelect = document.getElementById("quranFrom");
+    const toSelect = document.getElementById("quranTo");
+    
+    fromSelect.innerHTML = '<option value="">من</option>';
+    toSelect.innerHTML = '<option value="">إلى</option>';
+    
+    if(!sName) return;
+    
+    const count = surahData.find(s => s[0] === sName)[1];
+    for(let i=1; i<=count; i++) {
+        fromSelect.innerHTML += `<option value="${i}">${i}</option>`;
+        toSelect.innerHTML += `<option value="${i}">${i}</option>`;
+    }
+}
+
+// جعل خانة "إلى" تزيد تلقائياً بواحد عن "من"
+function autoSetTo() {
+    const fromVal = parseInt(document.getElementById("quranFrom").value);
+    const toSelect = document.getElementById("quranTo");
+    const sName = document.getElementById("quranSurah").value;
+    if(!sName || isNaN(fromVal)) return;
+    
+    const max = surahData.find(s => s[0] === sName)[1];
+    const nextVal = (fromVal < max) ? fromVal + 1 : fromVal;
+    toSelect.value = nextVal;
+}
+
 function checkLogin() {
-  const user = document.getElementById("userInput").value;
-  const pass = document.getElementById("passInput").value;
-  if (user === CORRECT_USER && pass === CORRECT_PASS) {
+  if(document.getElementById("userInput").value === CORRECT_USER && document.getElementById("passInput").value === CORRECT_PASS) {
     document.getElementById("lockScreen").style.display = "none";
     document.getElementById("mainContent").style.display = "block";
     loadCalendar();
-  } else {
-    document.getElementById("loginError").style.display = "block";
   }
 }
 
-document.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkLogin(); });
-
 const now = new Date(), year = now.getFullYear(), month = now.getMonth(), todayDate = now.getDate(), currentHour = now.getHours();
 const prayerSchedule = [
-  { key: "fajr", hour: 4, name: "فجر" }, { key: "zuhr", hour: 12, name: "ظهر" },
-  { key: "asr", hour: 15, name: "عصر" }, { key: "maghrib", hour: 18, name: "مغرب" },
-  { key: "isha", hour: 19, name: "عشاء" }
+  {key:"fajr", h:4, n:"فجر"}, {key:"zuhr", h:12, n:"ظهر"}, {key:"asr", h:15, n:"عصر"}, {key:"maghrib", h:18, n:"مغرب"}, {key:"isha", h:19, n:"عشاء"}
 ];
 
 function getData(dateStr) {
   const saved = localStorage.getItem(dateStr);
-  return saved ? JSON.parse(saved) : { prayer: {}, habit: false, quran: {s:"", f:"", t:""} };
+  let data = saved ? JSON.parse(saved) : { prayer: {}, habit: 0, quran: {s:"", f:"", t:""} };
+  return data;
 }
 
 function loadCalendar() {
@@ -187,7 +189,7 @@ function loadCalendar() {
     div.style.background = `conic-gradient(${cols.join(',')})`;
     
     if (data.quran && data.quran.s !== "") div.classList.add("quran-border");
-    if (data.habit) div.classList.add("habit-active-text");
+    if (data.habit > 0) div.classList.add(`h-level-${data.habit}`);
     
     div.onclick = () => openPopup(dStr, d);
     cal.appendChild(div);
@@ -198,30 +200,40 @@ function loadCalendar() {
 function openPopup(dateStr, dNum) {
   currentOpenDate = dateStr;
   const data = getData(dateStr);
-  document.getElementById("popupDate").innerText = `يوم ${dNum} ${now.toLocaleString("ar", {month: "long"})}`;
-  
+  document.getElementById("popupDate").innerText = `يوم ${dNum}`;
   const area = document.getElementById("circlesArea");
   area.innerHTML = "";
   
   prayerSchedule.forEach(p => {
     const b = document.createElement("div");
     b.className = "popup-circle" + (data.prayer[p.key] ? " active-prayer" : "");
-    b.innerText = p.name;
-    b.onclick = () => { data.prayer[p.key] = !data.prayer[p.key]; localStorage.setItem(dateStr, JSON.stringify(data)); openPopup(dateStr, dNum); };
+    b.innerText = p.n;
+    b.onclick = () => { data.prayer[p.key] = !data.prayer[p.key]; saveInternal(dateStr, data); openPopup(dateStr, dNum); };
     area.appendChild(b);
   });
 
+  const hLevel = Number(data.habit) || 0;
   const hB = document.createElement("div");
-  hB.className = "popup-circle" + (data.habit ? " active-habit" : "");
-  hB.innerText = "عادة";
-  hB.onclick = () => { data.habit = !data.habit; localStorage.setItem(dateStr, JSON.stringify(data)); openPopup(dateStr, dNum); };
+  hB.className = `popup-circle habit-btn ${hLevel > 0 ? 'habit-' + hLevel : ''}`;
+  hB.innerText = hLevel > 0 ? `عادة (${hLevel})` : "عادة";
+  hB.onclick = () => {
+    data.habit = (hLevel >= 4) ? 0 : hLevel + 1;
+    saveInternal(dateStr, data);
+    openPopup(dateStr, dNum);
+  };
   area.appendChild(hB);
 
+  // تحميل بيانات القرآن المسجلة مسبقاً
   document.getElementById("quranSurah").value = data.quran?.s || "";
+  updateAyahLimits(); // تحديث القوائم لتظهر الأرقام
   document.getElementById("quranFrom").value = data.quran?.f || "";
   document.getElementById("quranTo").value = data.quran?.t || "";
-
+  
   document.getElementById("popup").style.display = "flex";
+}
+
+function saveInternal(dateStr, data) {
+  localStorage.setItem(dateStr, JSON.stringify(data));
 }
 
 function saveAndClose() {
@@ -237,22 +249,49 @@ function saveAndClose() {
 }
 
 function updateStats() {
-  let totalDue = 0, doneP = 0, doneH = 0;
+  let totalDueP = 0, doneP = 0, penaltyH = 0;
   for (let d = 1; d <= todayDate; d++) {
     const data = getData(`d-${year}-${month+1}-${d}`);
     prayerSchedule.forEach(p => {
-      if (d < todayDate || (d === todayDate && currentHour >= p.hour)) {
-        totalDue++; if (data.prayer[p.key]) doneP++;
+      if (d < todayDate || (d === todayDate && currentHour >= p.h)) {
+        totalDueP++; if (data.prayer[p.key]) doneP++;
       }
     });
-    if (data.habit) doneH++;
+    penaltyH += (Number(data.habit) || 0);
   }
-  const pR = totalDue > 0 ? Math.round((doneP/totalDue)*100) : 0;
-  const hR = Math.round((doneH/todayDate)*100);
+  const pR = totalDueP > 0 ? Math.round((doneP/totalDueP)*100) : 0;
+  const maxPossiblePenalty = todayDate * 4;
+  const hR = maxPossiblePenalty > 0 ? Math.round(((maxPossiblePenalty - penaltyH) / maxPossiblePenalty) * 100) : 100;
   document.getElementById("prayerBar").style.width = pR+"%";
   document.getElementById("prayerPercent").innerText = pR+"%";
   document.getElementById("habitBar").style.width = hR+"%";
   document.getElementById("habitPercent").innerText = hR+"%";
+}
+
+function exportData() {
+  const allData = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith('d-')) allData[key] = localStorage.getItem(key);
+  }
+  const blob = new Blob([JSON.stringify(allData)], {type: "application/json"});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `backup.json`; a.click();
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = re => {
+      const content = JSON.parse(re.target.result);
+      Object.keys(content).forEach(k => localStorage.setItem(k, content[k]));
+      location.reload();
+    };
+    reader.readAsText(e.target.files[0]);
+  }
+  input.click();
 }
 </script>
 </body>
